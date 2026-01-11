@@ -1,11 +1,11 @@
-const CACHE_NAME = 'pomodoro-v3';
+const CACHE_NAME = 'pomodoro-v4';
 const urlsToCache = [
-  '/',
-  '/pomodoro.html',
-  '/shimmer.mp3',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/time/',
+  '/time/index.html',
+  '/time/shimmer.mp3',
+  '/time/manifest.json',
+  '/time/icon-192.png',
+  '/time/icon-512.png',
   'https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap'
 ];
 

@@ -2,20 +2,21 @@
   "name": "Pomodoro Timer",
   "short_name": "Pomodoro",
   "description": "A simple and elegant pomodoro timer",
-  "start_url": "/",
+  "id": "/time/",
+  "start_url": "/time/",
   "display": "fullscreen",
   "background_color": "#f5f1e8",
   "theme_color": "#f5f1e8",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/time/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/time/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

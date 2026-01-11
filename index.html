@@ -10,9 +10,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Pomodoro">
     <title>Pomodoro Timer</title>
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-    <link rel="apple-touch-icon" href="/icon-512.png">
+    <link rel="manifest" href="/time/manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="/time/icon-192.png">
+    <link rel="apple-touch-icon" href="/time/icon-512.png">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -597,7 +597,7 @@
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
+                navigator.serviceWorker.register('/time/sw.js')
                     .then(registration => {
                         console.log('Service Worker registered successfully:', registration.scope);
                     })
