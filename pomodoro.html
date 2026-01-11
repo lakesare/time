@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Timer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Crimson Text', serif;
+            background: #f5f1e8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            position: relative;
+            transition: background-color 1s ease-in-out;
+        }
+
+        body.rest-mode {
+            background: #76c9e9e0;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #3d2817;
+            font-size: 3rem;
+            margin-bottom: 40px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-blocks {
+            display: flex;
+            flex-direction: column;
+            gap: 0px;
+            margin-bottom: 40px;
+            padding-left: 25px;
+        }
+
+        .timer-block {
+            position: relative;
+            background: #d4c5a980;
+            border-radius: 3px;
+            transition: all 0.3s ease;
+            height: 60px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .timer-block.rest {
+            height: 30px;
+        }
+
+        .timer-block.work:not(.first-work) {
+            margin-top: 10px;
+        }
+
+        .block-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            transition: width 0.5s ease;
+            border-radius: 3px;
+        }
+
+        .timer-block.rest .block-fill {
+            display: none;
+        }
+
+        .timer-block.work .block-fill {
+            background: linear-gradient(90deg, #91dc78 0%, #7ec268 100%);
+        }
+
+        .timer-block.rest .block-fill {
+            background: linear-gradient(90deg, #89bbcb 0%, #83c0b5 100%);
+        }
+
+        .block-content {
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 30px;
+            z-index: 1;
+        }
+
+        .block-label {
+            font-size: 20px;
+            color: #3d2817;
+            font-weight: 600;
+        }
+
+        .block-time {
+            font-size: 21px;
+            color: #3d2817;
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            padding: 15px 50px;
+            background: #5d4e37;
+            color: #f5f1e8;
+            border: 3px solid #3d2817;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        #resetBtn {
+            background: #7a5c3e;
+        }
+
+        button:hover {
+            background: #6d5e47;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        #resetBtn:hover {
+            background: #8a6c4e;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .timer-block.completed {
+            opacity: 0.5;
+        }
+
+        .active-dot {
+            position: absolute;
+            left: -15px;
+            width: 8px;
+            height: 8px;
+            background: #5d4e37;
+            border-radius: 50%;
+            display: none;
+        }
+
+        .timer-block.active .active-dot {
+            display: block;
+        }
+
+        .settings-panel {
+            background: #f5f1e8;
+            border: 3px solid #5d4e37;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .settings-panel.hidden {
+            display: none;
+        }
+
+        .settings-title {
+            font-size: 1.8rem;
+            color: #3d2817;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .settings-description {
+            font-size: 1.1rem;
+            color: #5d4e37;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .settings-description em {
+            font-style: italic;
+            color: #3d2817;
+            font-weight: 600;
+        }
+
+        .sessions-input {
+            font-family: 'Crimson Text', serif;
+            font-size: 1.3rem;
+            padding: 15px;
+            background: #fff;
+            border: 2px solid #8b6f47;
+            border-radius: 5px;
+            width: 100%;
+            resize: vertical;
+            margin-bottom: 20px;
+        }
+
+        .sessions-input:focus {
+            outline: none;
+            border-color: #5d4e37;
+        }
+
+        .apply-settings-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-container input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-container label {
+            font-size: 1.2rem;
+            color: #3d2817;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .timer-section.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="currentTime">00:00</h1>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-title">Timer Settings</div>
+            
+            <div class="settings-description">
+                Enter session durations (alternating work and rest).<br>
+                Use minutes by default, or add "s"/"sec" for seconds.<br>
+                Example: <em>50 10 50 10</em> or <em>25 5s 25 5s</em>
+            </div>
+            
+            <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10">50 10 50 10</textarea>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="startWithRestCheckbox">
+                <label for="startWithRestCheckbox">Start with rest</label>
+            </div>
+
+            <button class="apply-settings-btn" id="applySettingsBtn">APPLY</button>
+        </div>
+
+        <div class="timer-section hidden" id="timerSection">
+            <div class="timer-blocks" id="timerBlocks">
+            </div>
+
+            <div class="controls">
+                <button id="startStopBtn">START</button>
+                <button id="resetBtn">RESET</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const settingsPanel = document.getElementById('settingsPanel');
+        const timerSection = document.getElementById('timerSection');
+        const timerBlocks = document.getElementById('timerBlocks');
+        const applySettingsBtn = document.getElementById('applySettingsBtn');
+        const startStopBtn = document.getElementById('startStopBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const currentTime = document.getElementById('currentTime');
+        
+        let isRunning = false;
+        let currentBlockIndex = 0;
+        let interval = null;
+        let timeRemaining = [];
+        let blocks = [];
+        let maxDuration = 0;
+        let wakeLock = null;
+
+        // Request wake lock to prevent screen from going blank
+        async function requestWakeLock() {
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock activated');
+                
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock released');
+                });
+            } catch (err) {
+                console.error(`${err.name}, ${err.message}`);
+            }
+        }
+
+        // Release wake lock
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
+        // Reacquire wake lock if page becomes visible again
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && isRunning) {
+                requestWakeLock();
+            }
+        });
+
+        function generateTimerBlocks() {
+            const sessionsInput = document.getElementById('sessionsInput').value;
+            const tokens = sessionsInput.trim().split(/\s+/);
+            
+            // Parse durations - support minutes (default), seconds (20s or 20sec)
+            const durations = tokens.map(token => {
+                if (token.endsWith('sec')) {
+                    const num = parseInt(token.slice(0, -3));
+                    return !isNaN(num) && num > 0 ? num : null;
+                } else if (token.endsWith('s')) {
+                    const num = parseInt(token.slice(0, -1));
+                    return !isNaN(num) && num > 0 ? num : null;
+                } else {
+                    const num = parseInt(token);
+                    return !isNaN(num) && num > 0 ? num * 60 : null; // Convert minutes to seconds
+                }
+            }).filter(d => d !== null);
+
+            if (durations.length === 0) {
+                alert('Please enter at least one duration');
+                return false;
+            }
+
+            // Find max duration for proportional sizing
+            maxDuration = Math.max(...durations);
+
+            // Clear existing blocks
+            timerBlocks.innerHTML = '';
+            blocks = [];
+            timeRemaining = [];
+
+            // Check if starting with rest
+            const startWithRest = document.getElementById('startWithRestCheckbox').checked;
+
+            // Track if we've seen the first work block
+            let firstWorkSeen = false;
+
+            // Create blocks alternating between work and rest
+            durations.forEach((duration, index) => {
+                const type = startWithRest
+                    ? (index % 2 === 0 ? 'rest' : 'work')
+                    : (index % 2 === 0 ? 'work' : 'rest');
+                const typeCount = startWithRest
+                    ? (type === 'work' ? Math.floor((index + 1) / 2) + 1 : Math.floor(index / 2) + 1)
+                    : (Math.floor(index / 2) + 1);
+                const isFirstWork = type === 'work' && !firstWorkSeen;
+                if (type === 'work') firstWorkSeen = true;
+                createBlock(type, typeCount, duration, index, isFirstWork);
+            });
+
+            blocks = document.querySelectorAll('.timer-block');
+            return true;
+        }
+
+        function createBlock(type, number, duration, index, isFirstWork = false) {
+            const block = document.createElement('div');
+            block.className = `timer-block ${type}${isFirstWork ? ' first-work' : ''}`;
+            block.dataset.index = index;
+            block.dataset.duration = duration;
+
+            const label = type === 'work' 
+                ? `Work (${number})`
+                : `Rest`;
+
+            // Calculate proportional width
+            const proportionalWidth = (duration / maxDuration) * 100;
+
+            block.innerHTML = `
+                <span class="active-dot"></span>
+                <div class="block-fill" style="width: ${proportionalWidth}%;"></div>
+                <div class="block-content">
+                    <span class="block-label">${label}</span>
+                    <span class="block-time">${formatTime(duration)}</span>
+                </div>
+            `;
+
+            timerBlocks.appendChild(block);
+            timeRemaining[index] = duration;
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function updateBlockDisplay(index) {
+            const block = blocks[index];
+            const timeDisplay = block.querySelector('.block-time');
+            const fill = block.querySelector('.block-fill');
+            const duration = parseInt(block.dataset.duration);
+            const remaining = timeRemaining[index];
+            
+            timeDisplay.textContent = formatTime(remaining);
+            
+            // Update main current time display
+            currentTime.textContent = formatTime(remaining);
+            
+            // Calculate width proportional to maxDuration
+            const proportionalWidth = (remaining / maxDuration) * 100;
+            fill.style.width = proportionalWidth + '%';
+        }
+
+        function updateRestMode() {
+            if (currentBlockIndex < blocks.length) {
+                const currentBlock = blocks[currentBlockIndex];
+                if (currentBlock.classList.contains('rest')) {
+                    document.body.classList.add('rest-mode');
+                } else {
+                    document.body.classList.remove('rest-mode');
+                }
+            } else {
+                document.body.classList.remove('rest-mode');
+            }
+        }
+
+        function tick() {
+            if (currentBlockIndex >= blocks.length) {
+                isRunning = false;
+                if (interval) {
+                    clearInterval(interval);
+                    interval = null;
+                }
+                startStopBtn.textContent = 'COMPLETED';
+                startStopBtn.disabled = true;
+                currentTime.textContent = '00:00';
+                document.body.classList.remove('rest-mode');
+                releaseWakeLock();
+                return;
+            }
+
+            const currentBlock = blocks[currentBlockIndex];
+            
+            // Decrease time
+            if (timeRemaining[currentBlockIndex] > 0) {
+                timeRemaining[currentBlockIndex]--;
+                updateBlockDisplay(currentBlockIndex);
+            } else {
+                // Current block finished
+                currentBlock.classList.remove('active');
+                currentBlock.classList.add('completed');
+                currentBlockIndex++;
+                
+                if (currentBlockIndex < blocks.length) {
+                    blocks[currentBlockIndex].classList.add('active');
+                    currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
+                    updateRestMode();
+                } else {
+                    isRunning = false;
+                    if (interval) {
+                        clearInterval(interval);
+                        interval = null;
+                    }
+                    startStopBtn.textContent = 'COMPLETED';
+                    startStopBtn.disabled = true;
+                    currentTime.textContent = '00:00';
+                    document.body.classList.remove('rest-mode');
+                    releaseWakeLock();
+                }
+            }
+        }
+
+        function startTimer() {
+            if (!isRunning) {
+                isRunning = true;
+                startStopBtn.textContent = 'PAUSE';
+                blocks[currentBlockIndex].classList.add('active');
+                updateRestMode();
+                requestWakeLock();
+                interval = setInterval(tick, 1000);
+            }
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            startStopBtn.textContent = 'RESUME';
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+            blocks.forEach(block => block.classList.remove('active'));
+            document.body.classList.remove('rest-mode');
+            releaseWakeLock();
+        }
+
+        function resetTimer() {
+            stopTimer();
+            settingsPanel.classList.remove('hidden');
+            timerSection.classList.add('hidden');
+            currentBlockIndex = 0;
+            startStopBtn.disabled = false;
+            currentTime.textContent = '00:00';
+            document.body.classList.remove('rest-mode');
+            releaseWakeLock();
+        }
+
+        applySettingsBtn.addEventListener('click', () => {
+            if (generateTimerBlocks()) {
+                settingsPanel.classList.add('hidden');
+                timerSection.classList.remove('hidden');
+                currentBlockIndex = 0;
+                isRunning = false;
+                startStopBtn.textContent = 'START';
+                startStopBtn.disabled = false;
+                // Initialize current time display
+                if (timeRemaining.length > 0) {
+                    currentTime.textContent = formatTime(timeRemaining[0]);
+                }
+            }
+        });
+
+        startStopBtn.addEventListener('click', () => {
+            if (isRunning) {
+                stopTimer();
+            } else {
+                startTimer();
+            }
+        });
+
+        resetBtn.addEventListener('click', resetTimer);
+    </script>
+</body>
+</html>
