@@ -288,6 +288,11 @@
                 <label for="startWithRestCheckbox">Start with rest</label>
             </div>
 
+            <div class="checkbox-container">
+                <input type="checkbox" id="showWorkNumbersCheckbox" checked>
+                <label for="showWorkNumbersCheckbox">Show work numbers</label>
+            </div>
+
             <button class="apply-settings-btn" id="applySettingsBtn">APPLY</button>
         </div>
 
@@ -382,6 +387,7 @@
 
             // Check if starting with rest
             const startWithRest = document.getElementById('startWithRestCheckbox').checked;
+            const showWorkNumbers = document.getElementById('showWorkNumbersCheckbox').checked;
 
             // Track if we've seen the first work block
             let firstWorkSeen = false;
@@ -392,25 +398,25 @@
                     ? (index % 2 === 0 ? 'rest' : 'work')
                     : (index % 2 === 0 ? 'work' : 'rest');
                 const typeCount = startWithRest
-                    ? (type === 'work' ? Math.floor((index + 1) / 2) + 1 : Math.floor(index / 2) + 1)
+                    ? (type === 'work' ? Math.floor((index + 1) / 2) : Math.floor(index / 2) + 1)
                     : (Math.floor(index / 2) + 1);
                 const isFirstWork = type === 'work' && !firstWorkSeen;
                 if (type === 'work') firstWorkSeen = true;
-                createBlock(type, typeCount, duration, index, isFirstWork);
+                createBlock(type, typeCount, duration, index, isFirstWork, showWorkNumbers);
             });
 
             blocks = document.querySelectorAll('.timer-block');
             return true;
         }
 
-        function createBlock(type, number, duration, index, isFirstWork = false) {
+        function createBlock(type, number, duration, index, isFirstWork = false, showWorkNumbers = true) {
             const block = document.createElement('div');
             block.className = `timer-block ${type}${isFirstWork ? ' first-work' : ''}`;
             block.dataset.index = index;
             block.dataset.duration = duration;
 
-            const label = type === 'work' 
-                ? `Work (${number})`
+            const label = type === 'work'
+                ? (showWorkNumbers ? `Work (${number})` : `Work`)
                 : `Rest`;
 
             // Calculate proportional width
