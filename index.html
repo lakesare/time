@@ -241,7 +241,7 @@
         .checkbox-container {
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -276,9 +276,8 @@
             <div class="settings-title">Timer Settings</div>
             
             <div class="settings-description">
-                Enter session durations (alternating work and rest).<br>
-                Use minutes by default, or add "s"/"sec" for seconds.<br>
-                Example: <em>50 10 50 10</em> or <em>25 5s 25 5s</em>
+                Enter session durations in minutes (alternating work and rest).<br>
+                Example: <em>50 10 50 10</em>.
             </div>
             
             <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10">50 10 50 10</textarea>
