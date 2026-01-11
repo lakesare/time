@@ -48,7 +48,6 @@
             flex-direction: column;
             gap: 0px;
             margin-bottom: 40px;
-            padding-left: 25px;
         }
 
         .timer-block {
@@ -123,30 +122,22 @@
 
         button {
             font-family: 'Crimson Text', serif;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             font-weight: 600;
-            padding: 15px 50px;
-            background: #5d4e37;
-            color: #f5f1e8;
-            border: 3px solid #3d2817;
+            padding: 12px 35px;
+            background: #d4c5a980;
+            color: #3d2817c4;
+            border: 2px solid #3d28177d;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
             letter-spacing: 1px;
         }
 
-        #resetBtn {
-            background: #7a5c3e;
-        }
-
         button:hover {
-            background: #6d5e47;
+            background: #d4c5a9;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        #resetBtn:hover {
-            background: #8a6c4e;
         }
 
         button:active {
@@ -169,12 +160,13 @@
 
         .active-dot {
             position: absolute;
-            left: -15px;
+            left: 11px;
             width: 8px;
             height: 8px;
             background: #5d4e37;
             border-radius: 50%;
             display: none;
+            z-index: 1000;
         }
 
         .timer-block.active .active-dot {
