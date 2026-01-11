@@ -3,7 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#f5f1e8">
+    <meta name="description" content="A simple and elegant pomodoro timer">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pomodoro">
     <title>Pomodoro Timer</title>
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * {
@@ -257,8 +264,12 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="currentTime">00:00</h1>
-        
+        <h1 id="currentTime">Pomodoro</h1>
+
+        <audio id="shimmerSound" preload="auto">
+            <source src="shimmer.mp3" type="audio/mpeg">
+        </audio>
+
         <div class="settings-panel" id="settingsPanel">
             <div class="settings-title">Timer Settings</div>
             
@@ -297,7 +308,8 @@
         const startStopBtn = document.getElementById('startStopBtn');
         const resetBtn = document.getElementById('resetBtn');
         const currentTime = document.getElementById('currentTime');
-        
+        const shimmerSound = document.getElementById('shimmerSound');
+
         let isRunning = false;
         let currentBlockIndex = 0;
         let interval = null;
@@ -460,7 +472,7 @@
                 }
                 startStopBtn.textContent = 'COMPLETED';
                 startStopBtn.disabled = true;
-                currentTime.textContent = '00:00';
+                currentTime.textContent = 'Pomodoro';
                 document.body.classList.remove('rest-mode');
                 releaseWakeLock();
                 return;
@@ -474,10 +486,19 @@
                 updateBlockDisplay(currentBlockIndex);
             } else {
                 // Current block finished
+                const wasWork = currentBlock.classList.contains('work');
+                const wasRest = currentBlock.classList.contains('rest');
+
                 currentBlock.classList.remove('active');
                 currentBlock.classList.add('completed');
                 currentBlockIndex++;
-                
+
+                // Play sound when work or rest ends
+                if (wasWork || wasRest) {
+                    shimmerSound.currentTime = 0;
+                    shimmerSound.play().catch(e => console.log('Sound play failed:', e));
+                }
+
                 if (currentBlockIndex < blocks.length) {
                     blocks[currentBlockIndex].classList.add('active');
                     currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
@@ -490,7 +511,7 @@
                     }
                     startStopBtn.textContent = 'COMPLETED';
                     startStopBtn.disabled = true;
-                    currentTime.textContent = '00:00';
+                    currentTime.textContent = 'Pomodoro';
                     document.body.classList.remove('rest-mode');
                     releaseWakeLock();
                 }
@@ -504,6 +525,13 @@
                 blocks[currentBlockIndex].classList.add('active');
                 updateRestMode();
                 requestWakeLock();
+
+                // Play sound when starting the first interval
+                if (currentBlockIndex === 0) {
+                    shimmerSound.currentTime = 0;
+                    shimmerSound.play().catch(e => console.log('Sound play failed:', e));
+                }
+
                 interval = setInterval(tick, 1000);
             }
         }
@@ -526,12 +554,15 @@
             timerSection.classList.add('hidden');
             currentBlockIndex = 0;
             startStopBtn.disabled = false;
-            currentTime.textContent = '00:00';
+            currentTime.textContent = 'Pomodoro';
             document.body.classList.remove('rest-mode');
             releaseWakeLock();
         }
 
         applySettingsBtn.addEventListener('click', () => {
+            // Initialize audio on user interaction to avoid autoplay restrictions
+            shimmerSound.load();
+
             if (generateTimerBlocks()) {
                 settingsPanel.classList.add('hidden');
                 timerSection.classList.remove('hidden');
@@ -555,6 +586,19 @@
         });
 
         resetBtn.addEventListener('click', resetTimer);
+
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('Service Worker registered successfully:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed:', error);
+                    });
+            });
+        }
     </script>
 </body>
 </html>
