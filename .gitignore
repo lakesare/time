@@ -1,0 +1,11 @@
+# Local development server files
+server.js
+server.key
+server.cert
+
+# Node modules (if added later)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
