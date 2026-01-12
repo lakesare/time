@@ -555,7 +555,9 @@
                 startStopBtn.textContent = 'COMPLETED';
                 startStopBtn.disabled = true;
                 menuBtn.classList.add('visible');
-                currentTime.textContent = 'Pomodoro';
+                currentTime.textContent = 'Completed!';
+                currentTime.classList.remove('large-time');
+                currentTime.style.fontSize = '3rem';
                 document.body.classList.remove('rest-mode');
                 releaseWakeLock();
                 return;
@@ -595,7 +597,9 @@
                     startStopBtn.textContent = 'COMPLETED';
                     startStopBtn.disabled = true;
                     menuBtn.classList.add('visible');
-                    currentTime.textContent = 'Pomodoro';
+                    currentTime.textContent = 'Completed!';
+                    currentTime.classList.remove('large-time');
+                    currentTime.style.fontSize = '3rem';
                     document.body.classList.remove('rest-mode');
                     releaseWakeLock();
                 }
@@ -641,6 +645,7 @@
             timerSection.classList.add('hidden');
             menuBtn.classList.remove('visible');
             currentTime.textContent = 'Pomodoro';
+            currentTime.style.fontSize = '';
         }
 
         function backToTimerFromSettings() {
@@ -662,6 +667,7 @@
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
+            currentTime.style.fontSize = '';
         }
 
         function applyDisplaySettings() {
@@ -737,6 +743,7 @@
             currentBlockIndex = 0;
             startStopBtn.disabled = false;
             currentTime.textContent = 'Pomodoro';
+            currentTime.style.fontSize = '';
             document.body.classList.remove('rest-mode');
             releaseWakeLock();
         }
@@ -763,7 +770,8 @@
                 startStopBtn.textContent = 'START';
                 startStopBtn.disabled = false;
 
-                // Apply display options
+                // Clear inline font size and apply display options
+                currentTime.style.fontSize = '';
                 applyDisplaySettings();
 
                 // Initialize current time display
