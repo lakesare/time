@@ -52,7 +52,7 @@
             font-variant-numeric: tabular-nums;
         }
 
-        h1.large-time {
+        body.setting-large-time.screen-timer h1 {
             font-size: 6rem;
         }
 
@@ -591,12 +591,12 @@
             const fill = block.querySelector('.block-fill');
             const duration = parseInt(block.dataset.duration);
             const remaining = timeRemaining[index];
-            
+
             timeDisplay.textContent = formatTime(remaining);
-            
+
             // Update main current time display
             currentTime.textContent = formatTime(remaining);
-            
+
             // Calculate width proportional to maxDuration
             const proportionalWidth = (remaining / maxDuration) * 100;
             fill.style.width = proportionalWidth + '%';
@@ -626,8 +626,6 @@
                 startStopBtn.disabled = true;
                 menuBtn.classList.add('visible');
                 currentTime.textContent = 'Completed!';
-                currentTime.classList.remove('large-time');
-                currentTime.style.fontSize = '3rem';
                 document.body.classList.remove('rest-mode');
                 releaseWakeLock();
                 return;
@@ -668,8 +666,6 @@
                     startStopBtn.disabled = true;
                     menuBtn.classList.add('visible');
                     currentTime.textContent = 'Completed!';
-                    currentTime.classList.remove('large-time');
-                    currentTime.style.fontSize = '3rem';
                     document.body.classList.remove('rest-mode');
                     releaseWakeLock();
                 }
@@ -735,7 +731,7 @@
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
-            currentTime.style.fontSize = '';
+            document.body.classList.remove('screen-timer');
         }
 
         function applyDisplaySettings() {
@@ -745,9 +741,9 @@
             const showWorkNumbers = document.getElementById('showWorkNumbersCheckbox').checked;
 
             if (largeTime) {
-                currentTime.classList.add('large-time');
+                document.body.classList.add('setting-large-time');
             } else {
-                currentTime.classList.remove('large-time');
+                document.body.classList.remove('setting-large-time');
             }
 
             if (altWorkColor) {
@@ -805,14 +801,13 @@
         function resetTimer() {
             stopTimer();
             menuBtn.classList.remove('visible');
-            settingsPanel.classList.add('hidden');
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentBlockIndex = 0;
             startStopBtn.disabled = false;
             currentTime.textContent = 'Pomodoro';
-            currentTime.style.fontSize = '';
             document.body.classList.remove('rest-mode');
+            document.body.classList.remove('screen-timer');
             releaseWakeLock();
         }
 
@@ -838,8 +833,10 @@
                 startStopBtn.textContent = 'START';
                 startStopBtn.disabled = false;
 
-                // Clear inline font size and apply display options
-                currentTime.style.fontSize = '';
+                // Mark that we're on timer screen
+                document.body.classList.add('screen-timer');
+
+                // Apply display options
                 applyDisplaySettings();
 
                 // Initialize current time display
