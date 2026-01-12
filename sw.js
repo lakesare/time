@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v4';
+const CACHE_NAME = 'pomodoro-v5';
 const urlsToCache = [
   '/time/',
   '/time/index.html',
@@ -17,6 +17,7 @@ self.addEventListener('install', event => {
         console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
+      .then(() => self.skipWaiting()) // Immediately activate new service worker
   );
 });
 
@@ -47,6 +48,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Take control of all pages immediately
   );
 });
