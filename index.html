@@ -52,6 +52,10 @@
             font-variant-numeric: tabular-nums;
         }
 
+        h1.large-time {
+            font-size: 6rem;
+        }
+
         .timer-blocks {
             display: flex;
             flex-direction: column;
@@ -93,6 +97,10 @@
 
         .timer-block.work .block-fill {
             background: linear-gradient(90deg, #91dc78 0%, #7ec268 100%);
+        }
+
+        body.alt-work-color .timer-block.work .block-fill {
+            background: #3f822987;
         }
 
         .timer-block.rest .block-fill {
@@ -361,6 +369,16 @@
             <div class="checkbox-container">
                 <input type="checkbox" id="showWorkNumbersCheckbox" checked>
                 <label for="showWorkNumbersCheckbox">Show work numbers</label>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="largeTimeCheckbox">
+                <label for="largeTimeCheckbox">Large time display</label>
+            </div>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="altWorkColorCheckbox">
+                <label for="altWorkColorCheckbox">Alternative work color</label>
             </div>
 
             <button class="apply-settings-btn" id="applySettingsBtn">START NEW TIMER</button>
@@ -686,6 +704,23 @@
                 isRunning = false;
                 startStopBtn.textContent = 'START';
                 startStopBtn.disabled = false;
+
+                // Apply display options
+                const largeTime = document.getElementById('largeTimeCheckbox').checked;
+                const altWorkColor = document.getElementById('altWorkColorCheckbox').checked;
+
+                if (largeTime) {
+                    currentTime.classList.add('large-time');
+                } else {
+                    currentTime.classList.remove('large-time');
+                }
+
+                if (altWorkColor) {
+                    document.body.classList.add('alt-work-color');
+                } else {
+                    document.body.classList.remove('alt-work-color');
+                }
+
                 // Initialize current time display
                 if (timeRemaining.length > 0) {
                     currentTime.textContent = formatTime(timeRemaining[0]);
