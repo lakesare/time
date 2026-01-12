@@ -167,35 +167,6 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
-        .back-to-timer-btn {
-            position: fixed;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-family: 'Crimson Text', serif;
-            font-size: 1rem;
-            font-weight: 600;
-            padding: 8px 20px;
-            background: #d4c5a980;
-            color: #3d2817c4;
-            border: 2px solid #3d28177d;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-            display: none;
-        }
-
-        .back-to-timer-btn.visible {
-            display: block;
-        }
-
-        .back-to-timer-btn:hover {
-            background: #d4c5a9;
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
         button {
             font-family: 'Crimson Text', serif;
             font-size: 1.1rem;
@@ -259,7 +230,7 @@
             display: block;
         }
 
-        .settings-panel {
+        .settings-panel, .setup-panel {
             background: #f5f1e8;
             border: 3px solid #5d4e37;
             border-radius: 8px;
@@ -267,7 +238,7 @@
             margin-bottom: 30px;
         }
 
-        .settings-panel.hidden {
+        .settings-panel.hidden, .setup-panel.hidden {
             display: none;
         }
 
@@ -349,22 +320,9 @@
             <source src="shimmer.mp3" type="audio/mpeg">
         </audio>
 
-        <button class="back-to-timer-btn" id="backToTimerBtn">BACK TO TIMER</button>
-
-        <div class="settings-panel" id="settingsPanel">
-            <div class="settings-title">Timer Settings</div>
-            
-            <div class="settings-description">
-                Enter session durations in minutes (alternating work and rest).<br>
-                Example: <em>50 10 50 10</em>.
-            </div>
-            
-            <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10" inputmode="numeric">50 10 50 10</textarea>
-
-            <div class="checkbox-container">
-                <input type="checkbox" id="startWithRestCheckbox">
-                <label for="startWithRestCheckbox">Start with rest</label>
-            </div>
+        <!-- Display Settings Screen -->
+        <div class="settings-panel hidden" id="settingsPanel">
+            <div class="settings-title">Display Settings</div>
 
             <div class="checkbox-container">
                 <input type="checkbox" id="showWorkNumbersCheckbox" checked>
@@ -379,6 +337,26 @@
             <div class="checkbox-container">
                 <input type="checkbox" id="altWorkColorCheckbox">
                 <label for="altWorkColorCheckbox">Alternative work color</label>
+            </div>
+
+            <button class="apply-settings-btn" id="backFromSettingsBtn">BACK TO TIMER</button>
+            <button class="apply-settings-btn" id="startNewTimerBtn">START A NEW TIMER</button>
+        </div>
+
+        <!-- Timer Setup Screen -->
+        <div class="setup-panel" id="setupPanel">
+            <div class="settings-title">Timer Setup</div>
+
+            <div class="settings-description">
+                Enter session durations in minutes (alternating work and rest).<br>
+                Example: <em>50 10 50 10</em>.
+            </div>
+
+            <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10" inputmode="numeric">50 10 50 10</textarea>
+
+            <div class="checkbox-container">
+                <input type="checkbox" id="startWithRestCheckbox">
+                <label for="startWithRestCheckbox">Start with rest</label>
             </div>
 
             <button class="apply-settings-btn" id="applySettingsBtn">START NEW TIMER</button>
@@ -399,10 +377,12 @@
 
     <script>
         const settingsPanel = document.getElementById('settingsPanel');
+        const setupPanel = document.getElementById('setupPanel');
         const timerSection = document.getElementById('timerSection');
         const timerBlocks = document.getElementById('timerBlocks');
         const applySettingsBtn = document.getElementById('applySettingsBtn');
-        const backToTimerBtn = document.getElementById('backToTimerBtn');
+        const backFromSettingsBtn = document.getElementById('backFromSettingsBtn');
+        const startNewTimerBtn = document.getElementById('startNewTimerBtn');
         const startStopBtn = document.getElementById('startStopBtn');
         const resetBtn = document.getElementById('resetBtn');
         const menuBtn = document.getElementById('menuBtn');
@@ -652,28 +632,105 @@
             releaseWakeLock();
         }
 
-        function goToMenu() {
+        function goToSettings() {
+            // Go to display settings screen
             settingsPanel.classList.remove('hidden');
+            setupPanel.classList.add('hidden');
             timerSection.classList.add('hidden');
             menuBtn.classList.remove('visible');
-            // Show back to timer button if there's an active timer session
-            if (blocks.length > 0) {
-                backToTimerBtn.classList.add('visible');
+            currentTime.textContent = 'Pomodoro';
+        }
+
+        function backToTimerFromSettings() {
+            // Apply display settings and return to timer
+            applyDisplaySettings();
+            settingsPanel.classList.add('hidden');
+            timerSection.classList.remove('hidden');
+            menuBtn.classList.add('visible');
+
+            // Restore current time display
+            if (currentBlockIndex < blocks.length) {
+                currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
             }
         }
 
-        function backToTimer() {
+        function goToSetup() {
+            // Go to timer setup screen
             settingsPanel.classList.add('hidden');
-            timerSection.classList.remove('hidden');
-            backToTimerBtn.classList.remove('visible');
-            menuBtn.classList.add('visible');
+            setupPanel.classList.remove('hidden');
+            timerSection.classList.add('hidden');
+            currentTime.textContent = 'Pomodoro';
+        }
+
+        function applyDisplaySettings() {
+            // Apply display options immediately
+            const largeTime = document.getElementById('largeTimeCheckbox').checked;
+            const altWorkColor = document.getElementById('altWorkColorCheckbox').checked;
+            const showWorkNumbers = document.getElementById('showWorkNumbersCheckbox').checked;
+
+            if (largeTime) {
+                currentTime.classList.add('large-time');
+            } else {
+                currentTime.classList.remove('large-time');
+            }
+
+            if (altWorkColor) {
+                document.body.classList.add('alt-work-color');
+            } else {
+                document.body.classList.remove('alt-work-color');
+            }
+
+            // Regenerate blocks if timer exists to apply show work numbers
+            if (blocks.length > 0 && !isRunning) {
+                regenerateBlocksWithSettings();
+            }
+        }
+
+        function regenerateBlocksWithSettings() {
+            // Regenerate blocks with current display settings without resetting timer state
+            const showWorkNumbers = document.getElementById('showWorkNumbersCheckbox').checked;
+
+            // Save block data AND time remaining before clearing
+            const blockData = Array.from(blocks).map(block => ({
+                duration: parseInt(block.dataset.duration),
+                type: block.classList.contains('work') ? 'work' : 'rest',
+                isCompleted: block.classList.contains('completed')
+            }));
+            const savedTimeRemaining = [...timeRemaining]; // Save time remaining
+
+            // Clear and rebuild blocks with new settings
+            timerBlocks.innerHTML = '';
+
+            let firstWorkSeen = false;
+            blockData.forEach((data, index) => {
+                const typeCount = blockData.slice(0, index + 1).filter(b =>
+                    b.type === data.type
+                ).length;
+                const isFirstWork = data.type === 'work' && !firstWorkSeen;
+                if (data.type === 'work') firstWorkSeen = true;
+
+                createBlock(data.type, typeCount, data.duration, index, isFirstWork, showWorkNumbers);
+            });
+
+            // Restore time remaining (createBlock overwrites it)
+            timeRemaining = savedTimeRemaining;
+
+            // Restore block states
+            blocks = document.querySelectorAll('.timer-block');
+            blocks.forEach((block, index) => {
+                if (blockData[index].isCompleted) {
+                    block.classList.add('completed');
+                } else if (index === currentBlockIndex) {
+                    updateBlockDisplay(index);
+                }
+            });
         }
 
         function resetTimer() {
             stopTimer();
             menuBtn.classList.remove('visible');
-            backToTimerBtn.classList.remove('visible');
-            settingsPanel.classList.remove('hidden');
+            settingsPanel.classList.add('hidden');
+            setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentBlockIndex = 0;
             startStopBtn.disabled = false;
@@ -694,10 +751,9 @@
             isRunning = false;
             document.body.classList.remove('rest-mode');
             releaseWakeLock();
-            backToTimerBtn.classList.remove('visible');
 
             if (generateTimerBlocks()) {
-                settingsPanel.classList.add('hidden');
+                setupPanel.classList.add('hidden');
                 timerSection.classList.remove('hidden');
                 menuBtn.classList.add('visible');
                 currentBlockIndex = 0;
@@ -706,20 +762,7 @@
                 startStopBtn.disabled = false;
 
                 // Apply display options
-                const largeTime = document.getElementById('largeTimeCheckbox').checked;
-                const altWorkColor = document.getElementById('altWorkColorCheckbox').checked;
-
-                if (largeTime) {
-                    currentTime.classList.add('large-time');
-                } else {
-                    currentTime.classList.remove('large-time');
-                }
-
-                if (altWorkColor) {
-                    document.body.classList.add('alt-work-color');
-                } else {
-                    document.body.classList.remove('alt-work-color');
-                }
+                applyDisplaySettings();
 
                 // Initialize current time display
                 if (timeRemaining.length > 0) {
@@ -738,9 +781,11 @@
 
         resetBtn.addEventListener('click', resetTimer);
 
-        menuBtn.addEventListener('click', goToMenu);
+        menuBtn.addEventListener('click', goToSettings);
 
-        backToTimerBtn.addEventListener('click', backToTimer);
+        backFromSettingsBtn.addEventListener('click', backToTimerFromSettings);
+
+        startNewTimerBtn.addEventListener('click', goToSetup);
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
