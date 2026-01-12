@@ -230,7 +230,7 @@
             display: block;
         }
 
-        .settings-panel, .setup-panel {
+        .setup-panel {
             background: #f5f1e8;
             border: 3px solid #5d4e37;
             border-radius: 8px;
@@ -238,7 +238,7 @@
             margin-bottom: 30px;
         }
 
-        .settings-panel.hidden, .setup-panel.hidden {
+        .setup-panel.hidden {
             display: none;
         }
 
@@ -310,6 +310,67 @@
         .timer-section.hidden {
             display: none;
         }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .menu-overlay.visible {
+            display: flex;
+        }
+
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 30px;
+            background: #f5f1e8;
+            border: 3px solid #5d4e37;
+            border-radius: 8px;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .settings-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: transparent;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .settings-modal.visible {
+            display: flex;
+        }
+
+        .settings-modal-content {
+            background: #f5f1e8e5;
+            border: 3px solid #5d4e37;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .close-modal-btn {
+            width: 100%;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -320,28 +381,35 @@
             <source src="shimmer.mp3" type="audio/mpeg">
         </audio>
 
-        <!-- Display Settings Screen -->
-        <div class="settings-panel hidden" id="settingsPanel">
-            <div class="settings-title">Display Settings</div>
-
-            <div class="checkbox-container">
-                <input type="checkbox" id="showWorkNumbersCheckbox" checked>
-                <label for="showWorkNumbersCheckbox">Show work numbers</label>
+        <!-- Menu Overlay -->
+        <div class="menu-overlay" id="menuOverlay">
+            <div class="menu-buttons">
+                <button id="displaySettingsBtn">DISPLAY SETTINGS</button>
+                <button id="stopTimerBtn">STOP THIS TIMER</button>
             </div>
+        </div>
 
-            <div class="checkbox-container">
-                <input type="checkbox" id="largeTimeCheckbox">
-                <label for="largeTimeCheckbox">Large time display</label>
-            </div>
+        <!-- Display Settings Modal -->
+        <div class="settings-modal" id="settingsModal">
+            <div class="settings-modal-content">
+                <div class="settings-title">Display Settings</div>
 
-            <div class="checkbox-container">
-                <input type="checkbox" id="altWorkColorCheckbox">
-                <label for="altWorkColorCheckbox">Alternative work color</label>
-            </div>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="showWorkNumbersCheckbox" checked>
+                    <label for="showWorkNumbersCheckbox">Show work numbers</label>
+                </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 40px;">
-                <button class="apply-settings-btn" id="backFromSettingsBtn" style="flex: 1; margin-top: 0;">BACK TO TIMER</button>
-                <button class="apply-settings-btn" id="startNewTimerBtn" style="flex: 1; margin-top: 0;">STOP THIS TIMER</button>
+                <div class="checkbox-container">
+                    <input type="checkbox" id="largeTimeCheckbox">
+                    <label for="largeTimeCheckbox">Large time display</label>
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="altWorkColorCheckbox">
+                    <label for="altWorkColorCheckbox">Alternative work color</label>
+                </div>
+
+                <button class="close-modal-btn" id="closeModalBtn">CLOSE</button>
             </div>
         </div>
 
@@ -378,13 +446,15 @@
     </div>
 
     <script>
-        const settingsPanel = document.getElementById('settingsPanel');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const settingsModal = document.getElementById('settingsModal');
         const setupPanel = document.getElementById('setupPanel');
         const timerSection = document.getElementById('timerSection');
         const timerBlocks = document.getElementById('timerBlocks');
         const applySettingsBtn = document.getElementById('applySettingsBtn');
-        const backFromSettingsBtn = document.getElementById('backFromSettingsBtn');
-        const startNewTimerBtn = document.getElementById('startNewTimerBtn');
+        const displaySettingsBtn = document.getElementById('displaySettingsBtn');
+        const stopTimerBtn = document.getElementById('stopTimerBtn');
+        const closeModalBtn = document.getElementById('closeModalBtn');
         const startStopBtn = document.getElementById('startStopBtn');
         const resetBtn = document.getElementById('resetBtn');
         const menuBtn = document.getElementById('menuBtn');
@@ -638,32 +708,30 @@
             releaseWakeLock();
         }
 
-        function goToSettings() {
-            // Go to display settings screen
-            settingsPanel.classList.remove('hidden');
-            setupPanel.classList.add('hidden');
-            timerSection.classList.add('hidden');
-            menuBtn.classList.remove('visible');
-            currentTime.textContent = 'Pomodoro';
-            currentTime.style.fontSize = '';
+        function openMenu() {
+            // Show menu overlay
+            menuOverlay.classList.add('visible');
         }
 
-        function backToTimerFromSettings() {
-            // Apply display settings and return to timer
-            applyDisplaySettings();
-            settingsPanel.classList.add('hidden');
-            timerSection.classList.remove('hidden');
-            menuBtn.classList.add('visible');
+        function closeMenu() {
+            menuOverlay.classList.remove('visible');
+        }
 
-            // Restore current time display
-            if (currentBlockIndex < blocks.length) {
-                currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
-            }
+        function openSettingsModal() {
+            // Close menu and open settings modal
+            closeMenu();
+            settingsModal.classList.add('visible');
+        }
+
+        function closeSettingsModal() {
+            // Apply settings and close modal
+            applyDisplaySettings();
+            settingsModal.classList.remove('visible');
         }
 
         function goToSetup() {
-            // Go to timer setup screen
-            settingsPanel.classList.add('hidden');
+            // Close menu and go to timer setup screen
+            closeMenu();
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
@@ -791,11 +859,32 @@
 
         resetBtn.addEventListener('click', resetTimer);
 
-        menuBtn.addEventListener('click', goToSettings);
+        menuBtn.addEventListener('click', openMenu);
 
-        backFromSettingsBtn.addEventListener('click', backToTimerFromSettings);
+        displaySettingsBtn.addEventListener('click', openSettingsModal);
 
-        startNewTimerBtn.addEventListener('click', goToSetup);
+        stopTimerBtn.addEventListener('click', goToSetup);
+
+        closeModalBtn.addEventListener('click', closeSettingsModal);
+
+        // Close menu when clicking outside
+        menuOverlay.addEventListener('click', (e) => {
+            if (e.target === menuOverlay) {
+                closeMenu();
+            }
+        });
+
+        // Close modal when clicking outside
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) {
+                closeSettingsModal();
+            }
+        });
+
+        // Apply display settings in real-time as checkboxes change
+        document.getElementById('showWorkNumbersCheckbox').addEventListener('change', applyDisplaySettings);
+        document.getElementById('largeTimeCheckbox').addEventListener('change', applyDisplaySettings);
+        document.getElementById('altWorkColorCheckbox').addEventListener('change', applyDisplaySettings);
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
