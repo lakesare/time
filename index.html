@@ -381,6 +381,56 @@
             transform: scale(1.1);
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
+
+        .saved-timers {
+            margin-bottom: 20px;
+        }
+
+        .saved-timers-title {
+            font-size: 1.1rem;
+            color: #3d2817;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .saved-timers-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .saved-timer-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #d4c5a980;
+            border: 2px solid #8b6f47;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            color: #3d2817;
+            font-weight: 600;
+        }
+
+        .saved-timer-chip:hover {
+            background: #d4c5a9;
+            transform: translateY(-1px);
+        }
+
+        .saved-timer-delete {
+            color: #8b6f47;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0 2px;
+        }
+
+        .saved-timer-delete:hover {
+            color: #5d4e37;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +469,7 @@
                     <div style="display: flex; gap: 10px; align-items: center;">
                         <div class="color-preset" data-color="#3f8229" style="background: #3f822987;" title="Default green"></div>
                         <div class="color-preset" data-color="#be5050" style="background: #be505087;" title="Rose"></div>
+                        <div class="color-preset" data-color="#2e6681" style="background: #2e668187;" title="Blue"></div>
                         <div class="color-preset" data-color="#fdf8e7" style="background: #fdf8e787;" title="Beige"></div>
                         <input type="color" id="workColorPicker" value="#3f8229">
                     </div>
@@ -431,6 +482,11 @@
         <!-- Timer Setup Screen -->
         <div class="setup-panel" id="setupPanel">
             <div class="settings-title">Timer Setup</div>
+
+            <div class="saved-timers" id="savedTimersSection" style="display: none;">
+                <div class="saved-timers-title">Saved timers:</div>
+                <div class="saved-timers-list" id="savedTimersList"></div>
+            </div>
 
             <div class="settings-description">
                 Enter session durations in minutes (alternating work and rest).<br>
@@ -527,6 +583,103 @@
         function saveTimerConfig() {
             localStorage.setItem('lastTimer', document.getElementById('sessionsInput').value);
             localStorage.setItem('startWithRest', document.getElementById('startWithRestCheckbox').checked);
+
+            // Also save to saved timers list
+            saveToTimersList();
+        }
+
+        // Get saved timers from localStorage
+        function getSavedTimers() {
+            const saved = localStorage.getItem('savedTimers');
+            return saved ? JSON.parse(saved) : [];
+        }
+
+        // Save current timer to the saved timers list
+        function saveToTimersList() {
+            const sessions = document.getElementById('sessionsInput').value.trim();
+            const startWithRest = document.getElementById('startWithRestCheckbox').checked;
+
+            if (!sessions) return;
+
+            let savedTimers = getSavedTimers();
+
+            // Create timer object
+            const timerObj = {
+                sessions: sessions,
+                startWithRest: startWithRest
+            };
+
+            // Check if this exact timer already exists
+            const exists = savedTimers.some(t =>
+                t.sessions === timerObj.sessions && t.startWithRest === timerObj.startWithRest
+            );
+
+            if (!exists) {
+                // Add to beginning of array
+                savedTimers.unshift(timerObj);
+
+                // Keep only last 10 timers
+                if (savedTimers.length > 10) {
+                    savedTimers = savedTimers.slice(0, 10);
+                }
+
+                localStorage.setItem('savedTimers', JSON.stringify(savedTimers));
+                renderSavedTimers();
+            }
+        }
+
+        // Render saved timers in the UI
+        function renderSavedTimers() {
+            const savedTimers = getSavedTimers();
+            const section = document.getElementById('savedTimersSection');
+            const list = document.getElementById('savedTimersList');
+
+            if (savedTimers.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = '';
+
+            savedTimers.forEach((timer, index) => {
+                const chip = document.createElement('div');
+                chip.className = 'saved-timer-chip';
+
+                const label = document.createElement('span');
+                label.textContent = timer.sessions + (timer.startWithRest ? ' (rest first)' : '');
+                label.style.cursor = 'pointer';
+
+                const deleteBtn = document.createElement('span');
+                deleteBtn.className = 'saved-timer-delete';
+                deleteBtn.textContent = '×';
+                deleteBtn.title = 'Delete this timer';
+
+                // Load timer on click
+                label.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.getElementById('sessionsInput').value = timer.sessions;
+                    document.getElementById('startWithRestCheckbox').checked = timer.startWithRest;
+                });
+
+                // Delete timer on X click
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    deleteSavedTimer(index);
+                });
+
+                chip.appendChild(label);
+                chip.appendChild(deleteBtn);
+                list.appendChild(chip);
+            });
+        }
+
+        // Delete a saved timer
+        function deleteSavedTimer(index) {
+            let savedTimers = getSavedTimers();
+            savedTimers.splice(index, 1);
+            localStorage.setItem('savedTimers', JSON.stringify(savedTimers));
+            renderSavedTimers();
         }
 
         // Request wake lock to prevent screen from going blank
@@ -790,6 +943,7 @@
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
             document.body.classList.remove('screen-timer');
+            renderSavedTimers();
         }
 
         function applyDisplaySettings() {
@@ -955,6 +1109,9 @@
 
         // Load settings on page load
         loadSettings();
+
+        // Render saved timers on page load
+        renderSavedTimers();
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
