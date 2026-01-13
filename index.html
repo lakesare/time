@@ -96,11 +96,7 @@
         }
 
         .timer-block.work .block-fill {
-            background: #3f822987;
-        }
-
-        body.alt-work-color .timer-block.work .block-fill {
-            background: linear-gradient(90deg, #91dc78 0%, #7ec268 100%);
+            background: var(--custom-work-color, #3f822987);
         }
 
         .timer-block.rest .block-fill {
@@ -371,6 +367,20 @@
             width: 100%;
             margin-top: 20px;
         }
+
+        .color-preset {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            border: 2px solid #5d4e37;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .color-preset:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 <body>
@@ -400,13 +410,18 @@
                 </div>
 
                 <div class="checkbox-container">
-                    <input type="checkbox" id="altWorkColorCheckbox">
-                    <label for="altWorkColorCheckbox">Alternative color for the work rectangle</label>
-                </div>
-
-                <div class="checkbox-container">
                     <input type="checkbox" id="largeTimeCheckbox">
                     <label for="largeTimeCheckbox">Bigger font for time</label>
+                </div>
+
+                <div class="checkbox-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
+                    <label for="workColorPicker">Work rectangle color:</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="color-preset" data-color="#3f8229" style="background: #3f822987;" title="Default green"></div>
+                        <div class="color-preset" data-color="#be5050" style="background: #be505087;" title="Rose"></div>
+                        <div class="color-preset" data-color="#fdf8e7" style="background: #fdf8e787;" title="Beige"></div>
+                        <input type="color" id="workColorPicker" value="#3f8229">
+                    </div>
                 </div>
 
                 <button class="close-modal-btn" id="closeModalBtn">CLOSE</button>
@@ -474,7 +489,7 @@
             // Load display settings
             const showWorkNumbers = localStorage.getItem('showWorkNumbers');
             const largeTime = localStorage.getItem('largeTime');
-            const altWorkColor = localStorage.getItem('altWorkColor');
+            const workColor = localStorage.getItem('workColor');
 
             if (showWorkNumbers !== null) {
                 document.getElementById('showWorkNumbersCheckbox').checked = showWorkNumbers === 'true';
@@ -482,8 +497,8 @@
             if (largeTime !== null) {
                 document.getElementById('largeTimeCheckbox').checked = largeTime === 'true';
             }
-            if (altWorkColor !== null) {
-                document.getElementById('altWorkColorCheckbox').checked = altWorkColor === 'true';
+            if (workColor !== null) {
+                document.getElementById('workColorPicker').value = workColor;
             }
 
             // Load last timer configuration
@@ -505,7 +520,7 @@
         function saveDisplaySettings() {
             localStorage.setItem('showWorkNumbers', document.getElementById('showWorkNumbersCheckbox').checked);
             localStorage.setItem('largeTime', document.getElementById('largeTimeCheckbox').checked);
-            localStorage.setItem('altWorkColor', document.getElementById('altWorkColorCheckbox').checked);
+            localStorage.setItem('workColor', document.getElementById('workColorPicker').value);
         }
 
         // Save timer configuration to localStorage
@@ -780,8 +795,8 @@
         function applyDisplaySettings() {
             // Apply display options immediately
             const largeTime = document.getElementById('largeTimeCheckbox').checked;
-            const altWorkColor = document.getElementById('altWorkColorCheckbox').checked;
             const showWorkNumbers = document.getElementById('showWorkNumbersCheckbox').checked;
+            const customWorkColor = document.getElementById('workColorPicker').value;
 
             if (largeTime) {
                 document.body.classList.add('setting-large-time');
@@ -789,11 +804,8 @@
                 document.body.classList.remove('setting-large-time');
             }
 
-            if (altWorkColor) {
-                document.body.classList.add('alt-work-color');
-            } else {
-                document.body.classList.remove('alt-work-color');
-            }
+            // Apply custom work color
+            document.documentElement.style.setProperty('--custom-work-color', customWorkColor + '87');
 
             // Regenerate blocks if timer exists to apply show work numbers
             if (blocks.length > 0 && !isRunning) {
@@ -930,7 +942,16 @@
         // Apply display settings in real-time as checkboxes change
         document.getElementById('showWorkNumbersCheckbox').addEventListener('change', applyDisplaySettings);
         document.getElementById('largeTimeCheckbox').addEventListener('change', applyDisplaySettings);
-        document.getElementById('altWorkColorCheckbox').addEventListener('change', applyDisplaySettings);
+        document.getElementById('workColorPicker').addEventListener('input', applyDisplaySettings);
+
+        // Handle color preset clicks
+        document.querySelectorAll('.color-preset').forEach(preset => {
+            preset.addEventListener('click', () => {
+                const color = preset.getAttribute('data-color');
+                document.getElementById('workColorPicker').value = color;
+                applyDisplaySettings();
+            });
+        });
 
         // Load settings on page load
         loadSettings();
