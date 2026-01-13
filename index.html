@@ -431,6 +431,24 @@
         .saved-timer-delete:hover {
             color: #5d4e37;
         }
+
+        .install-button {
+            display: none;
+            background: #261c0d;
+            color: #f5f1e8;
+            border: 2px solid #000;
+            margin: 0 auto;
+            font-size: 15px;
+            position: fixed;
+            bottom: 2px;
+            right: 4px;
+        }
+
+        .install-button:hover {
+            background: #261c0d;
+            transform: none;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -480,6 +498,8 @@
 
         <!-- Timer Setup Screen -->
         <div class="setup-panel" id="setupPanel">
+            <button class="install-button" id="installButton">INSTALL APP</button>
+
             <div class="settings-title">Timer Setup</div>
 
             <div class="saved-timers" id="savedTimersSection" style="display: none;">
@@ -538,6 +558,7 @@
         let blocks = [];
         let maxDuration = 0;
         let wakeLock = null;
+        let deferredPrompt = null;
 
         // Load saved settings on page load
         function loadSettings() {
@@ -1111,6 +1132,43 @@
 
         // Render saved timers on page load
         renderSavedTimers();
+
+        // PWA Install functionality
+        const installButton = document.getElementById('installButton');
+
+        // Listen for the beforeinstallprompt event
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install button
+            installButton.style.display = 'block';
+        });
+
+        // Handle install button click
+        installButton.addEventListener('click', async () => {
+            if (!deferredPrompt) {
+                return;
+            }
+            // Show the install prompt
+            deferredPrompt.prompt();
+            // Wait for the user to respond to the prompt
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log(`User response to the install prompt: ${outcome}`);
+            // Clear the deferredPrompt for next time
+            deferredPrompt = null;
+            // Hide the install button
+            installButton.style.display = 'none';
+        });
+
+        // Listen for app installed event
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            // Hide the install button
+            installButton.style.display = 'none';
+            deferredPrompt = null;
+        });
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
