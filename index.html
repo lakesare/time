@@ -96,11 +96,11 @@
         }
 
         .timer-block.work .block-fill {
-            background: linear-gradient(90deg, #91dc78 0%, #7ec268 100%);
+            background: #3f822987;
         }
 
         body.alt-work-color .timer-block.work .block-fill {
-            background: #3f822987;
+            background: linear-gradient(90deg, #91dc78 0%, #7ec268 100%);
         }
 
         .timer-block.rest .block-fill {
@@ -396,17 +396,17 @@
 
                 <div class="checkbox-container">
                     <input type="checkbox" id="showWorkNumbersCheckbox" checked>
-                    <label for="showWorkNumbersCheckbox">Show work numbers</label>
-                </div>
-
-                <div class="checkbox-container">
-                    <input type="checkbox" id="largeTimeCheckbox">
-                    <label for="largeTimeCheckbox">Large time display</label>
+                    <label for="showWorkNumbersCheckbox">Show number in the work rectangle</label>
                 </div>
 
                 <div class="checkbox-container">
                     <input type="checkbox" id="altWorkColorCheckbox">
-                    <label for="altWorkColorCheckbox">Alternative work color</label>
+                    <label for="altWorkColorCheckbox">Alternative color for the work rectangle</label>
+                </div>
+
+                <div class="checkbox-container">
+                    <input type="checkbox" id="largeTimeCheckbox">
+                    <label for="largeTimeCheckbox">Bigger font for time</label>
                 </div>
 
                 <button class="close-modal-btn" id="closeModalBtn">CLOSE</button>
@@ -422,7 +422,7 @@
                 Example: <em>50 10 50 10</em>.
             </div>
 
-            <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10" inputmode="numeric">50 10 50 10</textarea>
+            <textarea class="sessions-input" id="sessionsInput" rows="3" placeholder="50 10 50 10">50 10 50 10</textarea>
 
             <div class="checkbox-container">
                 <input type="checkbox" id="startWithRestCheckbox">
