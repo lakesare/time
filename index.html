@@ -681,11 +681,9 @@
                 updateRestMode();
                 requestWakeLock();
 
-                // Play sound when starting the first interval
-                if (currentBlockIndex === 0) {
-                    shimmerSound.currentTime = 0;
-                    shimmerSound.play().catch(e => console.log('Sound play failed:', e));
-                }
+                // Play sound when starting or resuming
+                shimmerSound.currentTime = 0;
+                shimmerSound.play().catch(e => console.log('Sound play failed:', e));
 
                 interval = setInterval(tick, 1000);
             }
