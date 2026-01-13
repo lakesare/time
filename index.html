@@ -469,6 +469,51 @@
         let maxDuration = 0;
         let wakeLock = null;
 
+        // Load saved settings on page load
+        function loadSettings() {
+            // Load display settings
+            const showWorkNumbers = localStorage.getItem('showWorkNumbers');
+            const largeTime = localStorage.getItem('largeTime');
+            const altWorkColor = localStorage.getItem('altWorkColor');
+
+            if (showWorkNumbers !== null) {
+                document.getElementById('showWorkNumbersCheckbox').checked = showWorkNumbers === 'true';
+            }
+            if (largeTime !== null) {
+                document.getElementById('largeTimeCheckbox').checked = largeTime === 'true';
+            }
+            if (altWorkColor !== null) {
+                document.getElementById('altWorkColorCheckbox').checked = altWorkColor === 'true';
+            }
+
+            // Load last timer configuration
+            const lastTimer = localStorage.getItem('lastTimer');
+            const startWithRest = localStorage.getItem('startWithRest');
+
+            if (lastTimer) {
+                document.getElementById('sessionsInput').value = lastTimer;
+            }
+            if (startWithRest !== null) {
+                document.getElementById('startWithRestCheckbox').checked = startWithRest === 'true';
+            }
+
+            // Apply display settings
+            applyDisplaySettings();
+        }
+
+        // Save display settings to localStorage
+        function saveDisplaySettings() {
+            localStorage.setItem('showWorkNumbers', document.getElementById('showWorkNumbersCheckbox').checked);
+            localStorage.setItem('largeTime', document.getElementById('largeTimeCheckbox').checked);
+            localStorage.setItem('altWorkColor', document.getElementById('altWorkColorCheckbox').checked);
+        }
+
+        // Save timer configuration to localStorage
+        function saveTimerConfig() {
+            localStorage.setItem('lastTimer', document.getElementById('sessionsInput').value);
+            localStorage.setItem('startWithRest', document.getElementById('startWithRestCheckbox').checked);
+        }
+
         // Request wake lock to prevent screen from going blank
         async function requestWakeLock() {
             try {
@@ -754,6 +799,9 @@
             if (blocks.length > 0 && !isRunning) {
                 regenerateBlocksWithSettings();
             }
+
+            // Save display settings
+            saveDisplaySettings();
         }
 
         function regenerateBlocksWithSettings() {
@@ -812,6 +860,9 @@
         applySettingsBtn.addEventListener('click', () => {
             // Initialize audio on user interaction to avoid autoplay restrictions
             shimmerSound.load();
+
+            // Save timer configuration
+            saveTimerConfig();
 
             // Reset the timer completely when applying new settings
             if (interval) {
@@ -880,6 +931,9 @@
         document.getElementById('showWorkNumbersCheckbox').addEventListener('change', applyDisplaySettings);
         document.getElementById('largeTimeCheckbox').addEventListener('change', applyDisplaySettings);
         document.getElementById('altWorkColorCheckbox').addEventListener('change', applyDisplaySettings);
+
+        // Load settings on page load
+        loadSettings();
 
         // Register service worker for PWA
         if ('serviceWorker' in navigator) {
