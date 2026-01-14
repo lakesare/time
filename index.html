@@ -113,16 +113,33 @@
             z-index: 1;
         }
 
-        .block-label {
-            font-size: 20px;
+        .timer-block.work .block-label,
+        .timer-block.work .block-time {
             color: #3d2817;
             font-weight: 600;
         }
 
-        .block-time {
+        .timer-block.work .block-label {
+            font-size: 20px;
+        }
+
+        .timer-block.work .block-time {
             font-size: 21px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .timer-block.rest .block-label,
+        .timer-block.rest .block-time {
             color: #3d2817;
             font-weight: 600;
+        }
+
+        .timer-block.rest .block-label {
+            font-size: 20px;
+        }
+
+        .timer-block.rest .block-time {
+            font-size: 21px;
             font-variant-numeric: tabular-nums;
         }
 
