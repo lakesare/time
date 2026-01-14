@@ -56,6 +56,10 @@
             font-size: 6rem;
         }
 
+        body.timer-completed h1 {
+            font-size: 3rem !important;
+        }
+
         .timer-blocks {
             display: flex;
             flex-direction: column;
@@ -877,6 +881,7 @@
                 menuBtn.classList.add('visible');
                 currentTime.textContent = 'Completed!';
                 document.body.classList.remove('rest-mode');
+                document.body.classList.add('timer-completed');
                 releaseWakeLock();
                 return;
             }
@@ -917,6 +922,7 @@
                     menuBtn.classList.add('visible');
                     currentTime.textContent = 'Completed!';
                     document.body.classList.remove('rest-mode');
+                    document.body.classList.add('timer-completed');
                     releaseWakeLock();
                 }
             }
@@ -927,6 +933,7 @@
                 isRunning = true;
                 startStopBtn.textContent = 'PAUSE';
                 menuBtn.classList.remove('visible');
+                document.body.classList.remove('timer-completed');
                 blocks[currentBlockIndex].classList.add('active');
                 updateRestMode();
                 requestWakeLock();
@@ -1057,6 +1064,7 @@
             currentTime.textContent = 'Pomodoro';
             document.body.classList.remove('rest-mode');
             document.body.classList.remove('screen-timer');
+            document.body.classList.remove('timer-completed');
             releaseWakeLock();
         }
 
@@ -1074,6 +1082,7 @@
             }
             isRunning = false;
             document.body.classList.remove('rest-mode');
+            document.body.classList.remove('timer-completed');
             releaseWakeLock();
 
             if (generateTimerBlocks()) {
