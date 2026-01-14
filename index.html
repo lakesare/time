@@ -70,7 +70,7 @@
         .timer-block {
             position: relative;
             background: #d4c5a980;
-            border-radius: 3px;
+            border-radius: 0;
             transition: all 0.3s ease;
             height: 60px;
             width: 100%;
@@ -78,12 +78,18 @@
             align-items: center;
         }
 
-        .timer-block.rest {
-            height: 30px;
+        .timer-block:first-child {
+            border-top-left-radius: 3px;
+            border-top-right-radius: 3px;
         }
 
-        .timer-block.work:not(.first-work) {
-            margin-top: 10px;
+        .timer-block:last-child {
+            border-bottom-left-radius: 3px;
+            border-bottom-right-radius: 3px;
+        }
+
+        .timer-block.rest {
+            height: 30px;
         }
 
         .block-fill {
