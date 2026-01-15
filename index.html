@@ -1114,6 +1114,8 @@
             // Close menu and go to timer setup screen
             closeMenu();
             clearTimerProgress();
+            blocks = [];
+            timeRemaining = [];
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
