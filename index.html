@@ -615,6 +615,7 @@
         const shimmerSound = document.getElementById('shimmerSound');
 
         let isRunning = false;
+        let timerStarted = false;
         let currentBlockIndex = 0;
         let interval = null;
         let timeRemaining = [];
@@ -725,6 +726,7 @@
                 timeRemaining: timeRemaining,
                 currentBlockIndex: currentBlockIndex,
                 isRunning: isRunning,
+                timerStarted: timerStarted,
                 timestamp: Date.now(),
                 sessions: sessionsInput,
                 startWithRest: startWithRest
@@ -816,10 +818,14 @@
                 currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
 
                 // Set button state
+                timerStarted = progress.timerStarted || false;
                 if (progress.isRunning) {
                     startTimer();
-                } else {
+                } else if (timerStarted) {
                     startStopBtn.textContent = 'RESUME';
+                    menuBtn.classList.add('visible');
+                } else {
+                    startStopBtn.textContent = 'START';
                     menuBtn.classList.add('visible');
                 }
 
@@ -1086,6 +1092,7 @@
         function startTimer() {
             if (!isRunning) {
                 isRunning = true;
+                timerStarted = true;
                 startStopBtn.textContent = 'PAUSE';
                 menuBtn.classList.remove('visible');
                 document.body.classList.remove('timer-completed');
@@ -1141,6 +1148,7 @@
             clearTimerProgress();
             blocks = [];
             timeRemaining = [];
+            timerStarted = false;
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
@@ -1250,6 +1258,7 @@
                 menuBtn.classList.add('visible');
                 currentBlockIndex = 0;
                 isRunning = false;
+                timerStarted = false;
                 startStopBtn.textContent = 'START';
                 startStopBtn.disabled = false;
 
@@ -1380,6 +1389,7 @@
                 menuBtn.classList.add('visible');
                 currentBlockIndex = 0;
                 isRunning = false;
+                timerStarted = false;
                 startStopBtn.textContent = 'START';
                 startStopBtn.disabled = false;
                 document.body.classList.add('screen-timer');
