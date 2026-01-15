@@ -189,7 +189,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #d4c5a980;
+            background: #e4dbc9;
             border: 2px solid #3d28177d;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -1154,6 +1154,7 @@
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
             document.body.classList.remove('screen-timer');
+            document.body.classList.remove('rest-mode');
             renderSavedTimers();
         }
 
