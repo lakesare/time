@@ -686,6 +686,111 @@
             }
         }
 
+        // Save timer progress to localStorage
+        function saveTimerProgress() {
+            const sessionsInput = document.getElementById('sessionsInput').value;
+            const startWithRest = document.getElementById('startWithRestCheckbox').checked;
+
+            const progress = {
+                timeRemaining: timeRemaining,
+                currentBlockIndex: currentBlockIndex,
+                isRunning: isRunning,
+                timestamp: Date.now(),
+                sessions: sessionsInput,
+                startWithRest: startWithRest
+            };
+            localStorage.setItem('timerProgress', JSON.stringify(progress));
+        }
+
+        // Clear timer progress from localStorage
+        function clearTimerProgress() {
+            localStorage.removeItem('timerProgress');
+        }
+
+        // Restore timer progress from localStorage
+        function restoreTimerProgress() {
+            const saved = localStorage.getItem('timerProgress');
+            if (!saved) return false;
+
+            try {
+                const progress = JSON.parse(saved);
+
+                // Restore input values
+                document.getElementById('sessionsInput').value = progress.sessions;
+                document.getElementById('startWithRestCheckbox').checked = progress.startWithRest;
+
+                // Generate the timer blocks
+                if (!generateTimerBlocks()) {
+                    clearTimerProgress();
+                    return false;
+                }
+
+                // Restore time remaining
+                timeRemaining = progress.timeRemaining;
+                currentBlockIndex = progress.currentBlockIndex;
+
+                // If timer was running, calculate elapsed time
+                if (progress.isRunning) {
+                    const elapsedSeconds = Math.floor((Date.now() - progress.timestamp) / 1000);
+                    let remaining = elapsedSeconds;
+
+                    // Subtract elapsed time from blocks
+                    while (remaining > 0 && currentBlockIndex < blocks.length) {
+                        if (timeRemaining[currentBlockIndex] > remaining) {
+                            timeRemaining[currentBlockIndex] -= remaining;
+                            remaining = 0;
+                        } else {
+                            remaining -= timeRemaining[currentBlockIndex];
+                            timeRemaining[currentBlockIndex] = 0;
+                            currentBlockIndex++;
+                        }
+                    }
+                }
+
+                // Check if timer completed while away
+                if (currentBlockIndex >= blocks.length) {
+                    clearTimerProgress();
+                    return false;
+                }
+
+                // Show timer section
+                setupPanel.classList.add('hidden');
+                timerSection.classList.remove('hidden');
+                document.body.classList.add('screen-timer');
+
+                // Mark completed blocks
+                blocks.forEach((block, index) => {
+                    if (index < currentBlockIndex) {
+                        block.classList.add('completed');
+                        // Update display to show 0
+                        const fill = block.querySelector('.block-fill');
+                        const timeDisplay = block.querySelector('.block-time');
+                        fill.style.width = '0%';
+                        timeDisplay.textContent = '00:00';
+                    } else if (index === currentBlockIndex) {
+                        updateBlockDisplay(index);
+                    }
+                });
+
+                // Update current time display
+                currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
+
+                // Set button state
+                if (progress.isRunning) {
+                    startTimer();
+                } else {
+                    startStopBtn.textContent = 'RESUME';
+                    menuBtn.classList.add('visible');
+                }
+
+                return true;
+            } catch (e) {
+                console.error('Failed to restore timer progress:', e);
+                clearTimerProgress();
+                return false;
+            }
+        }
+
         // Render saved timers in the UI
         function renderSavedTimers() {
             const savedTimers = getSavedTimers();
@@ -900,6 +1005,7 @@
                 document.body.classList.remove('rest-mode');
                 document.body.classList.add('timer-completed');
                 releaseWakeLock();
+                clearTimerProgress();
                 return;
             }
 
@@ -941,6 +1047,7 @@
                     document.body.classList.remove('rest-mode');
                     document.body.classList.add('timer-completed');
                     releaseWakeLock();
+                    clearTimerProgress();
                 }
             }
         }
@@ -1073,6 +1180,7 @@
 
         function resetTimer() {
             stopTimer();
+            clearTimerProgress();
             menuBtn.classList.remove('visible');
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
@@ -1175,6 +1283,16 @@
 
         // Render saved timers on page load
         renderSavedTimers();
+
+        // Restore timer progress if available
+        restoreTimerProgress();
+
+        // Save timer progress when page is hidden/closing
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden' && blocks.length > 0) {
+                saveTimerProgress();
+            }
+        });
 
         // PWA Install functionality
         const installButton = document.getElementById('installButton');
