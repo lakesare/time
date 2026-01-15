@@ -991,26 +991,30 @@
             }
         }
 
+        function completeTimer() {
+            isRunning = false;
+            if (interval) {
+                clearInterval(interval);
+                interval = null;
+            }
+            startStopBtn.textContent = 'COMPLETED';
+            startStopBtn.disabled = true;
+            menuBtn.classList.add('visible');
+            currentTime.textContent = 'Completed!';
+            document.body.classList.remove('rest-mode');
+            document.body.classList.add('timer-completed');
+            releaseWakeLock();
+            clearTimerProgress();
+        }
+
         function tick() {
             if (currentBlockIndex >= blocks.length) {
-                isRunning = false;
-                if (interval) {
-                    clearInterval(interval);
-                    interval = null;
-                }
-                startStopBtn.textContent = 'COMPLETED';
-                startStopBtn.disabled = true;
-                menuBtn.classList.add('visible');
-                currentTime.textContent = 'Completed!';
-                document.body.classList.remove('rest-mode');
-                document.body.classList.add('timer-completed');
-                releaseWakeLock();
-                clearTimerProgress();
+                completeTimer();
                 return;
             }
 
             const currentBlock = blocks[currentBlockIndex];
-            
+
             // Decrease time
             if (timeRemaining[currentBlockIndex] > 0) {
                 timeRemaining[currentBlockIndex]--;
@@ -1035,19 +1039,7 @@
                     currentTime.textContent = formatTime(timeRemaining[currentBlockIndex]);
                     updateRestMode();
                 } else {
-                    isRunning = false;
-                    if (interval) {
-                        clearInterval(interval);
-                        interval = null;
-                    }
-                    startStopBtn.textContent = 'COMPLETED';
-                    startStopBtn.disabled = true;
-                    menuBtn.classList.add('visible');
-                    currentTime.textContent = 'Completed!';
-                    document.body.classList.remove('rest-mode');
-                    document.body.classList.add('timer-completed');
-                    releaseWakeLock();
-                    clearTimerProgress();
+                    completeTimer();
                 }
             }
         }
