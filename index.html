@@ -492,6 +492,19 @@
             right: 4px;
         }
 
+        .copy-link {
+            text-align: center;
+            color: #5d4e37;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            text-decoration: underline;
+        }
+
+        .copy-link:hover {
+            color: #3d2817;
+        }
+
         .install-button:hover {
             background: #261c0d;
             transform: none;
@@ -568,6 +581,8 @@
             </div>
 
             <button class="apply-settings-btn" id="applySettingsBtn">START NEW TIMER</button>
+
+            <div class="copy-link" id="copyLinkBtn">Copy link to this timer</div>
         </div>
 
         <div class="timer-section hidden" id="timerSection">
@@ -1269,6 +1284,26 @@
 
         closeModalBtn.addEventListener('click', closeSettingsModal);
 
+        // Copy link to timer
+        document.getElementById('copyLinkBtn').addEventListener('click', () => {
+            const sessions = document.getElementById('sessionsInput').value.trim();
+            const startWithRest = document.getElementById('startWithRestCheckbox').checked;
+
+            if (!sessions) return;
+
+            const prefix = startWithRest ? 'rest:' : '';
+            const url = window.location.origin + window.location.pathname + '?' + prefix + encodeURIComponent(sessions);
+
+            navigator.clipboard.writeText(url).then(() => {
+                const copyLink = document.getElementById('copyLinkBtn');
+                const originalText = copyLink.textContent;
+                copyLink.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyLink.textContent = originalText;
+                }, 1500);
+            });
+        });
+
         // Close menu when clicking outside
         menuOverlay.addEventListener('click', (e) => {
             if (e.target === menuOverlay) {
@@ -1320,8 +1355,53 @@
         // Render saved timers on page load
         renderSavedTimers();
 
-        // Restore timer progress if available
-        restoreTimerProgress();
+        // Check for URL query parameter to start timer directly
+        function handleUrlQuery() {
+            const query = window.location.search.slice(1); // Remove the '?'
+            if (!query) return false;
+
+            // Decode the query (spaces might be encoded as %20 or +)
+            let sessions = decodeURIComponent(query.replace(/\+/g, ' '));
+
+            // Check for rest: prefix to start with rest
+            const startWithRest = sessions.startsWith('rest:');
+            if (startWithRest) {
+                sessions = sessions.slice(5); // Remove 'rest:' prefix
+            }
+
+            // Set the sessions input and startWithRest checkbox
+            document.getElementById('sessionsInput').value = sessions;
+            document.getElementById('startWithRestCheckbox').checked = startWithRest;
+
+            // Generate timer blocks and show timer screen
+            if (generateTimerBlocks()) {
+                setupPanel.classList.add('hidden');
+                timerSection.classList.remove('hidden');
+                menuBtn.classList.add('visible');
+                currentBlockIndex = 0;
+                isRunning = false;
+                startStopBtn.textContent = 'START';
+                startStopBtn.disabled = false;
+                document.body.classList.add('screen-timer');
+                applyDisplaySettings();
+
+                if (timeRemaining.length > 0) {
+                    currentTime.textContent = formatTime(timeRemaining[0]);
+                }
+
+                // Remove query from URL without reload
+                history.replaceState({}, '', window.location.pathname);
+
+                return true;
+            }
+
+            return false;
+        }
+
+        // Handle URL query first, otherwise restore timer progress
+        if (!handleUrlQuery()) {
+            restoreTimerProgress();
+        }
 
         // Save timer progress when page is hidden/closing
         document.addEventListener('visibilitychange', () => {
