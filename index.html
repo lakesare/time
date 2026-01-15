@@ -274,7 +274,6 @@
             border: 3px solid #5d4e37;
             border-radius: 8px;
             padding: 30px;
-            padding-bottom: 9px;
             margin-bottom: 30px;
         }
 
@@ -494,12 +493,11 @@
         }
 
         .copy-link {
-            text-align: center;
             color: #5d4e37;
             cursor: pointer;
             font-size: 0.95rem;
-            margin-top: 15px;
             text-decoration: underline;
+            margin-left: auto;
         }
 
         .copy-link:hover {
@@ -579,11 +577,10 @@
             <div class="checkbox-container">
                 <input type="checkbox" id="startWithRestCheckbox">
                 <label for="startWithRestCheckbox">Start with rest</label>
+                <span class="copy-link" id="copyLinkBtn">Copy link</span>
             </div>
 
             <button class="apply-settings-btn" id="applySettingsBtn">START NEW TIMER</button>
-
-            <div class="copy-link" id="copyLinkBtn">Copy link to this timer</div>
         </div>
 
         <div class="timer-section hidden" id="timerSection">
