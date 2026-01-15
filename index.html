@@ -808,26 +808,25 @@
             savedTimers.forEach((timer, index) => {
                 const chip = document.createElement('div');
                 chip.className = 'saved-timer-chip';
+                chip.style.cursor = 'pointer';
 
                 const label = document.createElement('span');
                 label.textContent = timer.sessions + (timer.startWithRest ? ' (rest first)' : '');
-                label.style.cursor = 'pointer';
 
                 const deleteBtn = document.createElement('span');
                 deleteBtn.className = 'saved-timer-delete';
                 deleteBtn.textContent = '×';
                 deleteBtn.title = 'Delete this timer';
 
-                // Load timer on click
-                label.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                // Load timer on chip click (excluding delete button)
+                chip.addEventListener('click', (e) => {
+                    if (e.target === deleteBtn) return;
                     document.getElementById('sessionsInput').value = timer.sessions;
                     document.getElementById('startWithRestCheckbox').checked = timer.startWithRest;
                 });
 
                 // Delete timer on X click
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
+                deleteBtn.addEventListener('click', () => {
                     deleteSavedTimer(index);
                 });
 
