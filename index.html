@@ -820,7 +820,7 @@
                 // Set button state
                 timerStarted = progress.timerStarted || false;
                 if (progress.isRunning) {
-                    startTimer();
+                    startTimer(true); // silent - don't play sound on restore
                 } else if (timerStarted) {
                     startStopBtn.textContent = 'RESUME';
                     menuBtn.classList.add('visible');
@@ -1089,7 +1089,7 @@
             }
         }
 
-        function startTimer() {
+        function startTimer(silent = false) {
             if (!isRunning) {
                 isRunning = true;
                 timerStarted = true;
@@ -1100,9 +1100,11 @@
                 updateRestMode();
                 requestWakeLock();
 
-                // Play sound when starting or resuming
-                shimmerSound.currentTime = 0;
-                shimmerSound.play().catch(e => console.log('Sound play failed:', e));
+                // Play sound when starting or resuming (unless silent)
+                if (!silent) {
+                    shimmerSound.currentTime = 0;
+                    shimmerSound.play().catch(e => console.log('Sound play failed:', e));
+                }
 
                 interval = setInterval(tick, 1000);
             }
