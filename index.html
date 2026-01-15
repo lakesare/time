@@ -123,7 +123,7 @@
         }
 
         .timer-block.work .block-fill {
-            background: var(--custom-work-color, #8cac75);
+            background: var(--custom-work-color, #839da3);
         }
 
         .timer-block.rest .block-fill {
@@ -516,22 +516,22 @@
                 <div class="settings-title">Display Settings</div>
 
                 <div class="checkbox-container">
-                    <input type="checkbox" id="showWorkNumbersCheckbox" checked>
+                    <input type="checkbox" id="showWorkNumbersCheckbox">
                     <label for="showWorkNumbersCheckbox">Show number in the work rectangle</label>
                 </div>
 
                 <div class="checkbox-container">
-                    <input type="checkbox" id="largeTimeCheckbox">
+                    <input type="checkbox" id="largeTimeCheckbox" checked>
                     <label for="largeTimeCheckbox">Bigger font for time</label>
                 </div>
 
                 <div class="checkbox-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                     <label for="workColorPicker">Work rectangle color:</label>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <div class="color-preset" data-color="#8cac75" style="background: #8cac75;" title="Default green"></div>
-                        <div class="color-preset" data-color="#d09189" style="background: #d09189;" title="Rose"></div>
                         <div class="color-preset" data-color="#839da3" style="background: #839da3;" title="Blue"></div>
-                        <input type="color" id="workColorPicker" value="#8cac75">
+                        <div class="color-preset" data-color="#8cac75" style="background: #8cac75;" title="Green"></div>
+                        <div class="color-preset" data-color="#d09189" style="background: #d09189;" title="Rose"></div>
+                        <input type="color" id="workColorPicker" value="#839da3">
                     </div>
                 </div>
 
