@@ -81,7 +81,7 @@
 
         .timer-block {
             position: relative;
-            background: #d4c5a980;
+            background: #e4dbc9;
             border-radius: 0;
             transition: all 0.3s ease;
             height: 60px;
@@ -118,7 +118,7 @@
         }
 
         .timer-block.work .block-fill {
-            background: var(--custom-work-color, #3f822987);
+            background: var(--custom-work-color, #8cac75);
         }
 
         .timer-block.rest .block-fill {
@@ -207,7 +207,7 @@
             font-size: 1.1rem;
             font-weight: 600;
             padding: 9px 35px;
-            background: #d4c5a980;
+            background: #e4dbc9;
             color: #3d2817c4;
             border: 2px solid #3d28177d;
             border-radius: 8px;
@@ -523,10 +523,10 @@
                 <div class="checkbox-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
                     <label for="workColorPicker">Work rectangle color:</label>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <div class="color-preset" data-color="#3f8229" style="background: #3f822987;" title="Default green"></div>
-                        <div class="color-preset" data-color="#be5050" style="background: #be505087;" title="Rose"></div>
-                        <div class="color-preset" data-color="#2e6681" style="background: #2e668187;" title="Blue"></div>
-                        <input type="color" id="workColorPicker" value="#3f8229">
+                        <div class="color-preset" data-color="#8cac75" style="background: #8cac75;" title="Default green"></div>
+                        <div class="color-preset" data-color="#d09189" style="background: #d09189;" title="Rose"></div>
+                        <div class="color-preset" data-color="#839da3" style="background: #839da3;" title="Blue"></div>
+                        <input type="color" id="workColorPicker" value="#8cac75">
                     </div>
                 </div>
 
@@ -1134,7 +1134,7 @@
             }
 
             // Apply custom work color
-            document.documentElement.style.setProperty('--custom-work-color', customWorkColor + '87');
+            document.documentElement.style.setProperty('--custom-work-color', customWorkColor);
 
             // Regenerate blocks if timer exists to apply show work numbers
             if (blocks.length > 0 && !isRunning) {
