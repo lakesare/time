@@ -688,6 +688,11 @@
 
         // Save timer progress to localStorage
         function saveTimerProgress() {
+            // Only save if we have valid state
+            if (timeRemaining.length === 0 || timeRemaining.some(t => typeof t !== 'number' || isNaN(t))) {
+                return;
+            }
+
             const sessionsInput = document.getElementById('sessionsInput').value;
             const startWithRest = document.getElementById('startWithRestCheckbox').checked;
 
@@ -714,6 +719,16 @@
 
             try {
                 const progress = JSON.parse(saved);
+
+                // Validate saved data
+                if (!progress.sessions ||
+                    !Array.isArray(progress.timeRemaining) ||
+                    progress.timeRemaining.length === 0 ||
+                    progress.timeRemaining.some(t => typeof t !== 'number' || isNaN(t)) ||
+                    typeof progress.currentBlockIndex !== 'number') {
+                    clearTimerProgress();
+                    return false;
+                }
 
                 // Restore input values
                 document.getElementById('sessionsInput').value = progress.sessions;
@@ -1098,6 +1113,7 @@
         function goToSetup() {
             // Close menu and go to timer setup screen
             closeMenu();
+            clearTimerProgress();
             setupPanel.classList.remove('hidden');
             timerSection.classList.add('hidden');
             currentTime.textContent = 'Pomodoro';
