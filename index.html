@@ -1214,6 +1214,11 @@
             blocks.forEach((block, index) => {
                 if (blockData[index].isCompleted) {
                     block.classList.add('completed');
+                    // Update display to show 0
+                    const fill = block.querySelector('.block-fill');
+                    const timeDisplay = block.querySelector('.block-time');
+                    fill.style.width = '0%';
+                    timeDisplay.textContent = '00:00';
                 } else if (index === currentBlockIndex) {
                     updateBlockDisplay(index);
                 }
