@@ -425,6 +425,11 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
+        .color-preset.selected {
+            outline: 3px solid #3d2817;
+            outline-offset: 2px;
+        }
+
         .saved-timers {
             margin-bottom: 20px;
         }
@@ -1283,17 +1288,34 @@
         document.getElementById('largeTimeCheckbox').addEventListener('change', applyDisplaySettings);
         document.getElementById('workColorPicker').addEventListener('input', applyDisplaySettings);
 
+        // Update selected color preset based on current color
+        function updateSelectedColorPreset() {
+            const currentColor = document.getElementById('workColorPicker').value.toLowerCase();
+            document.querySelectorAll('.color-preset').forEach(preset => {
+                if (preset.getAttribute('data-color').toLowerCase() === currentColor) {
+                    preset.classList.add('selected');
+                } else {
+                    preset.classList.remove('selected');
+                }
+            });
+        }
+
         // Handle color preset clicks
         document.querySelectorAll('.color-preset').forEach(preset => {
             preset.addEventListener('click', () => {
                 const color = preset.getAttribute('data-color');
                 document.getElementById('workColorPicker').value = color;
                 applyDisplaySettings();
+                updateSelectedColorPreset();
             });
         });
 
+        // Update selection when color picker changes
+        document.getElementById('workColorPicker').addEventListener('input', updateSelectedColorPreset);
+
         // Load settings on page load
         loadSettings();
+        updateSelectedColorPreset();
 
         // Render saved timers on page load
         renderSavedTimers();
