@@ -359,7 +359,7 @@
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 10001;
         }
 
         .menu-overlay.visible {
@@ -821,6 +821,8 @@
                 } else if (timerStarted) {
                     startStopBtn.textContent = 'RESUME';
                     menuBtn.classList.add('visible');
+                    blocks[currentBlockIndex].classList.add('active');
+                    updateRestMode();
                 } else {
                     startStopBtn.textContent = 'START';
                     menuBtn.classList.add('visible');
@@ -1219,6 +1221,9 @@
                     timeDisplay.textContent = '00:00';
                 } else if (index === currentBlockIndex) {
                     updateBlockDisplay(index);
+                    if (timerStarted || isRunning) {
+                        block.classList.add('active');
+                    }
                 }
             });
         }
