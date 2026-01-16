@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v5';
+const CACHE_NAME = 'pomodoro-v6';
 const urlsToCache = [
   '/time/',
   '/time/index.html',
@@ -21,18 +21,42 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network-first for HTML, cache-first for assets
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Network-first for HTML pages (so users get updates immediately when online)
+  if (event.request.mode === 'navigate' ||
+      url.pathname === '/time/' ||
+      url.pathname === '/time/index.html' ||
+      url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Update cache with fresh HTML
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
+          });
+          return response;
+        })
+        .catch(() => {
+          // Offline - serve from cache
+          return caches.match(event.request);
+        })
+    );
+    return;
+  }
+
+  // Cache-first for other assets (images, audio, fonts)
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
           return response;
         }
         return fetch(event.request);
-      }
-    )
+      })
   );
 });
 
