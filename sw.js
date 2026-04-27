@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v6';
+const CACHE_NAME = 'pomodoro-v7';
 const urlsToCache = [
   '/time/',
   '/time/index.html',
@@ -24,6 +24,36 @@ self.addEventListener('install', event => {
 // Fetch event - network-first for HTML, cache-first for assets
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
+
+  // Handle range requests (browsers use these for audio streaming)
+  if (event.request.headers.has('range')) {
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        if (!cachedResponse) {
+          return fetch(event.request);
+        }
+        const rangeHeader = event.request.headers.get('range');
+        const matches = rangeHeader.match(/bytes=(\d+)-(\d*)/);
+        if (!matches) return cachedResponse;
+        return cachedResponse.arrayBuffer().then(buffer => {
+          const start = parseInt(matches[1]);
+          const end = matches[2] !== '' ? parseInt(matches[2]) : buffer.byteLength - 1;
+          const sliced = buffer.slice(start, end + 1);
+          return new Response(sliced, {
+            status: 206,
+            statusText: 'Partial Content',
+            headers: {
+              'Content-Type': cachedResponse.headers.get('Content-Type') || 'audio/mpeg',
+              'Content-Range': `bytes ${start}-${end}/${buffer.byteLength}`,
+              'Content-Length': String(sliced.byteLength),
+              'Accept-Ranges': 'bytes',
+            }
+          });
+        });
+      })
+    );
+    return;
+  }
 
   // Network-first for HTML pages (so users get updates immediately when online)
   if (event.request.mode === 'navigate' ||
