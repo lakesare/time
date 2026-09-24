@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pomodoro-v9';
+const CACHE_NAME = 'pomodoro-v10';
 const urlsToCache = [
   '/time/',
   '/time/index.html',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
   // Handle range requests (browsers use these for audio streaming)
   if (event.request.headers.has('range')) {
     event.respondWith(
-      caches.match(event.request).then(cachedResponse => {
+      caches.match(event.request, { ignoreVary: true }).then(cachedResponse => {
         if (!cachedResponse) {
           return fetch(event.request);
         }
@@ -90,7 +90,7 @@ self.addEventListener('fetch', event => {
 
   // Cache-first for other assets (images, audio, fonts)
   event.respondWith(
-    caches.match(event.request)
+    caches.match(event.request, { ignoreVary: true })
       .then(response => {
         if (response) {
           return response;
