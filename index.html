@@ -42,9 +42,36 @@
             color: #e4dbc9;
         }
 
-        html.flipped {
+        /* Manual rotation of the whole page (menu > ROTATE 90deg) */
+        html[data-rotation] {
+            overflow: hidden;
+        }
+
+        html[data-rotation] body {
+            height: 100%;
+            min-height: 0;
+            overflow: auto;
+        }
+
+        html[data-rotation="180"] {
+            width: 100vw;
+            height: 100vh;
             transform: rotate(180deg);
-            transition: transform 0.4s ease-in-out;
+        }
+
+        html[data-rotation="90"],
+        html[data-rotation="270"] {
+            width: 100vh;
+            height: 100vw;
+            transform-origin: top left;
+        }
+
+        html[data-rotation="90"] {
+            transform: rotate(90deg) translateY(-100%);
+        }
+
+        html[data-rotation="270"] {
+            transform: rotate(270deg) translateX(-100%);
         }
 
         .container {
@@ -529,7 +556,7 @@
         <div class="menu-overlay" id="menuOverlay">
             <div class="menu-buttons">
                 <button id="displaySettingsBtn">DISPLAY SETTINGS</button>
-                <button id="flipBtn">FLIP 180&deg;</button>
+                <button id="rotateBtn">ROTATE 90&deg;</button>
                 <button id="stopTimerBtn">STOP THIS TIMER</button>
             </div>
         </div>
@@ -547,11 +574,6 @@
                 <div class="checkbox-container">
                     <input type="checkbox" id="largeTimeCheckbox" checked>
                     <label for="largeTimeCheckbox">Bigger font for time</label>
-                </div>
-
-                <div class="checkbox-container">
-                    <input type="checkbox" id="autoFlipCheckbox" checked>
-                    <label for="autoFlipCheckbox">Turn the display around when the phone is upside down</label>
                 </div>
 
                 <div class="checkbox-container" style="flex-direction: column; align-items: flex-start; gap: 8px;">
@@ -621,8 +643,7 @@
         const startStopBtn = document.getElementById('startStopBtn');
         const resetBtn = document.getElementById('resetBtn');
         const menuBtn = document.getElementById('menuBtn');
-        const flipBtn = document.getElementById('flipBtn');
-        const autoFlipCheckbox = document.getElementById('autoFlipCheckbox');
+        const rotateBtn = document.getElementById('rotateBtn');
         const currentTime = document.getElementById('currentTime');
         const shimmerSound = document.getElementById('shimmerSound');
 
@@ -636,86 +657,29 @@
         let wakeLock = null;
         let deferredPrompt = null;
 
-        // Turning the display around when the phone is held upside down
-        let deviceUpsideDown = false;
-        let manualFlip = null;
-        let isListeningToDeviceOrientation = false;
+        // Manual rotation of the page, in degrees (0, 90, 180 or 270)
+        let rotation = 0;
 
-        function screenAngle() {
-            if (screen.orientation && typeof screen.orientation.angle === 'number') {
-                return screen.orientation.angle;
+        function applyRotation() {
+            if (rotation === 0) {
+                document.documentElement.removeAttribute('data-rotation');
             } else {
-                return typeof window.orientation === 'number' ? (window.orientation + 360) % 360 : 0;
+                document.documentElement.setAttribute('data-rotation', rotation);
             }
-        }
-
-        function applyFlip() {
-            let shouldFlip;
-            if (manualFlip !== null) {
-                shouldFlip = manualFlip;
-            } else if (!autoFlipCheckbox.checked) {
-                shouldFlip = false;
-            } else {
-                // An OS that turned the screen around by itself has already done the flip
-                shouldFlip = deviceUpsideDown !== (screenAngle() === 180);
-            }
-            document.documentElement.classList.toggle('flipped', shouldFlip);
-        }
-
-        function handleDeviceOrientation(event) {
-            if (event.beta === null) return;
-            // In landscape beta sits near zero, too close to tell the top edge of the phone from the bottom edge
-            const angle = screenAngle();
-            if (angle !== 0 && angle !== 180) return;
-
-            let upsideDown;
-            if (event.beta < -25) {
-                upsideDown = true;
-            } else if (event.beta > 25) {
-                upsideDown = false;
-            } else {
-                // A phone lying flat tilts too little to read, so keep the previous reading
-                return;
-            }
-
-            if (upsideDown === deviceUpsideDown) return;
-            deviceUpsideDown = upsideDown;
-            applyFlip();
-        }
-
-        async function listenToDeviceOrientation() {
-            if (isListeningToDeviceOrientation) return true;
-            if (!window.DeviceOrientationEvent) return false;
-
-            // iOS hands out the motion sensors only after an explicit permission granted during a user gesture
-            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                try {
-                    if (await DeviceOrientationEvent.requestPermission() !== 'granted') return false;
-                } catch (error) {
-                    return false;
-                }
-            }
-
-            window.addEventListener('deviceorientation', handleDeviceOrientation);
-            isListeningToDeviceOrientation = true;
-            return true;
         }
 
         // Load saved settings on page load
         function loadSettings() {
+            const savedRotation = parseInt(localStorage.getItem('rotation'), 10);
+            if ([90, 180, 270].includes(savedRotation)) {
+                rotation = savedRotation;
+            }
+            applyRotation();
+
             // Load display settings
             const showWorkNumbers = localStorage.getItem('showWorkNumbers');
             const largeTime = localStorage.getItem('largeTime');
             const workColor = localStorage.getItem('workColor');
-            const autoFlip = localStorage.getItem('autoFlip');
-            const savedManualFlip = localStorage.getItem('manualFlip');
-
-            if (autoFlip !== null) {
-                autoFlipCheckbox.checked = autoFlip === 'true';
-            }
-            if (savedManualFlip === 'true' || savedManualFlip === 'false') {
-                manualFlip = savedManualFlip === 'true';
-            }
 
             if (showWorkNumbers !== null) {
                 document.getElementById('showWorkNumbersCheckbox').checked = showWorkNumbers === 'true';
@@ -747,8 +711,6 @@
             localStorage.setItem('showWorkNumbers', document.getElementById('showWorkNumbersCheckbox').checked);
             localStorage.setItem('largeTime', document.getElementById('largeTimeCheckbox').checked);
             localStorage.setItem('workColor', document.getElementById('workColorPicker').value);
-            localStorage.setItem('autoFlip', autoFlipCheckbox.checked);
-            localStorage.setItem('manualFlip', manualFlip === null ? 'auto' : manualFlip);
         }
 
         // Save timer configuration to localStorage
@@ -1262,8 +1224,6 @@
             // Apply custom work color
             document.documentElement.style.setProperty('--custom-work-color', customWorkColor);
 
-            applyFlip();
-
             // Regenerate blocks if timer exists to apply show work numbers
             if (blocks.length > 0 && !isRunning) {
                 regenerateBlocksWithSettings();
@@ -1388,6 +1348,12 @@
 
         menuBtn.addEventListener('click', openMenu);
 
+        rotateBtn.addEventListener('click', () => {
+            rotation = (rotation + 90) % 360;
+            applyRotation();
+            localStorage.setItem('rotation', rotation);
+        });
+
         displaySettingsBtn.addEventListener('click', openSettingsModal);
 
         stopTimerBtn.addEventListener('click', goToSetup);
@@ -1431,26 +1397,6 @@
         // Apply display settings in real-time as checkboxes change
         document.getElementById('showWorkNumbersCheckbox').addEventListener('change', applyDisplaySettings);
         document.getElementById('largeTimeCheckbox').addEventListener('change', applyDisplaySettings);
-
-        autoFlipCheckbox.addEventListener('change', async () => {
-            // Ticking the checkbox hands control back to the sensor, whatever the last manual flip was
-            manualFlip = null;
-            if (autoFlipCheckbox.checked) await listenToDeviceOrientation();
-            applyDisplaySettings();
-        });
-
-        flipBtn.addEventListener('click', () => {
-            manualFlip = !document.documentElement.classList.contains('flipped');
-            autoFlipCheckbox.checked = false;
-            applyDisplaySettings();
-            closeMenu();
-        });
-
-        if (screen.orientation) {
-            screen.orientation.addEventListener('change', applyFlip);
-        } else {
-            window.addEventListener('orientationchange', applyFlip);
-        }
         document.getElementById('workColorPicker').addEventListener('input', applyDisplaySettings);
 
         // Update selected color preset based on current color
@@ -1480,14 +1426,6 @@
 
         // Load settings on page load
         loadSettings();
-
-        // On iOS the sensor stays closed until a tap grants permission, so keep asking on the taps that start a timer
-        listenToDeviceOrientation();
-        [applySettingsBtn, startStopBtn, menuBtn].forEach(button => {
-            button.addEventListener('click', () => {
-                if (autoFlipCheckbox.checked) listenToDeviceOrientation();
-            });
-        });
         updateSelectedColorPreset();
 
         // Render saved timers on page load
