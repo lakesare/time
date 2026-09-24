@@ -1,7 +1,15 @@
-const CACHE_NAME = 'pomodoro-v8';
+const CACHE_NAME = 'pomodoro-v9';
 const urlsToCache = [
   '/time/',
   '/time/index.html',
+  '/time/style.css',
+  '/time/js/main.js',
+  '/time/js/dom.js',
+  '/time/js/state.js',
+  '/time/js/storage.js',
+  '/time/js/pwa.js',
+  '/time/js/timer.js',
+  '/time/js/ui.js',
   '/time/shimmer.mp3',
   '/time/manifest.json',
   '/time/icon-192.png',
@@ -55,15 +63,17 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Network-first for HTML pages (so users get updates immediately when online)
+  // Network-first for HTML, CSS and JS (so users get updates immediately when online)
   if (event.request.mode === 'navigate' ||
       url.pathname === '/time/' ||
       url.pathname === '/time/index.html' ||
-      url.pathname.endsWith('.html')) {
+      url.pathname.endsWith('.html') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname.endsWith('.js')) {
     event.respondWith(
       fetch(event.request)
         .then(response => {
-          // Update cache with fresh HTML
+          // Update cache with the fresh file
           const responseClone = response.clone();
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, responseClone);
